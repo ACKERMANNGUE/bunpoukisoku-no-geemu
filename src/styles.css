@@ -1,0 +1,388 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1d1824;
+  background: radial-gradient(circle at top left, #fff0f7 0, transparent 32%), #f7f2fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 56px;
+}
+
+.hero-card,
+.target-card,
+.assembled-card,
+.board-card,
+.progress-panel,
+.actions-card,
+.result-card {
+  border: 1px solid rgba(59, 42, 82, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 20px 60px rgba(45, 27, 72, 0.08);
+  backdrop-filter: blur(14px);
+  border-radius: 28px;
+}
+
+.hero-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 32px;
+}
+
+.eyebrow,
+.card-label {
+  margin: 0;
+  color: #8b4a74;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 8px 0 12px;
+  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.hero-description {
+  max-width: 720px;
+  margin: 0;
+  color: #62566b;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.hero-meta {
+  min-width: 160px;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  border-radius: 22px;
+  background: linear-gradient(150deg, #2d1b48, #8b4a74);
+  color: white;
+  text-align: center;
+}
+
+.hero-meta span,
+.hero-meta small {
+  opacity: 0.82;
+}
+
+.hero-meta strong {
+  display: block;
+  font-size: 3.2rem;
+  line-height: 1;
+}
+
+.target-card,
+.assembled-card,
+.actions-card {
+  margin-top: 18px;
+  padding: 22px;
+}
+
+.target-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.target-card p,
+.assembled-card p {
+  margin: 8px 0 0;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.assembled-card p {
+  min-height: 44px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.board-card {
+  margin-top: 18px;
+  padding: 28px;
+  overflow: hidden;
+}
+
+.piece-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 28px;
+  min-height: 210px;
+}
+
+.puzzle-piece {
+  --piece-color: #7367f0;
+  position: relative;
+  width: 150px;
+  min-height: 116px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 16px 18px;
+  color: white;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--piece-color) 85%, white), var(--piece-color));
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 22px;
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--piece-color) 26%, transparent);
+  cursor: grab;
+  user-select: none;
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.puzzle-piece::before,
+.puzzle-piece::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: inherit;
+}
+
+.puzzle-piece::before {
+  left: -18px;
+  box-shadow: inset -8px 0 0 rgba(255, 255, 255, 0.26);
+}
+
+.puzzle-piece::after {
+  right: -18px;
+  box-shadow: inset 8px 0 0 rgba(255, 255, 255, 0.26);
+}
+
+.puzzle-piece:hover {
+  transform: translateY(-4px);
+  filter: saturate(1.08);
+}
+
+.puzzle-piece:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.piece-main-text {
+  position: relative;
+  z-index: 1;
+  font-size: 1.85rem;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.piece-reading,
+.piece-type {
+  position: relative;
+  z-index: 1;
+  font-size: 0.78rem;
+  opacity: 0.88;
+}
+
+.piece-type {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.correct-position {
+  outline: 4px solid rgba(52, 168, 83, 0.28);
+}
+
+.invalid-connection {
+  outline: 4px solid rgba(220, 53, 69, 0.32);
+  animation: shake 260ms ease;
+}
+
+.grammar-noun { --piece-color: #6d5dfc; }
+.grammar-pronoun { --piece-color: #8e5cf7; }
+.grammar-topicParticle { --piece-color: #d64587; }
+.grammar-subjectParticle { --piece-color: #ef476f; }
+.grammar-objectParticle { --piece-color: #f77f00; }
+.grammar-locationParticle { --piece-color: #118ab2; }
+.grammar-directionParticle { --piece-color: #277da1; }
+.grammar-comitativeParticle { --piece-color: #06d6a0; }
+.grammar-possessiveParticle { --piece-color: #43aa8b; }
+.grammar-quoteParticle { --piece-color: #4d908e; }
+.grammar-timeExpression { --piece-color: #577590; }
+.grammar-adverb { --piece-color: #9b5de5; }
+.grammar-adjective { --piece-color: #f15bb5; }
+.grammar-verb { --piece-color: #2d3142; }
+.grammar-teForm { --piece-color: #3a0ca3; }
+.grammar-auxiliary { --piece-color: #7209b7; }
+.grammar-clauseConnector { --piece-color: #bc6c25; }
+.grammar-nominalizer { --piece-color: #606c38; }
+
+.progress-panel {
+  margin-top: 18px;
+  padding: 22px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-weight: 800;
+}
+
+.progress-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eadff1;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b4a74, #2d1b48);
+  transition: width 220ms ease;
+}
+
+.progress-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 16px;
+  color: #5f5269;
+}
+
+.progress-stats div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actions-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.primary-button,
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+  transform: translateY(-2px);
+}
+
+.primary-button {
+  color: white;
+  background: #2d1b48;
+  box-shadow: 0 14px 28px rgba(45, 27, 72, 0.22);
+}
+
+.secondary-button {
+  color: #2d1b48;
+  background: #efe5f4;
+}
+
+.result-card {
+  margin-top: 18px;
+  padding: 28px;
+  border-color: rgba(52, 168, 83, 0.28);
+}
+
+.result-card h2 {
+  margin: 0 0 12px;
+}
+
+.japanese-result {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.translation-result {
+  margin: 8px 0;
+  color: #5f5269;
+  font-size: 1.15rem;
+}
+
+.explanation-result {
+  margin: 0;
+  color: #3d3445;
+  line-height: 1.65;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@media (max-width: 780px) {
+  .app-shell {
+    width: min(100% - 20px, 1180px);
+    padding-top: 16px;
+  }
+
+  .hero-card,
+  .target-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-card,
+  .board-card {
+    padding: 20px;
+  }
+
+  .piece-list {
+    justify-content: center;
+  }
+
+  .puzzle-piece {
+    width: 132px;
+    min-height: 108px;
+  }
+
+  .assembled-card p {
+    font-size: 1.4rem;
+  }
+}
