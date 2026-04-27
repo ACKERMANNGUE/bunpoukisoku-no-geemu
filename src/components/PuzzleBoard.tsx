@@ -121,6 +121,8 @@ export function PuzzleBoard() {
         <p>{assembledSentence}</p>
       </section>
 
+      <ProgressPanel result={validationResult} totalPieces={pieces.length} totalValidOrders={currentSentence.validOrders.length} hasSubmitted={hasSubmitted} />
+
       <section className="board-card">
         <div className="piece-list">
           {pieces.map((piece, index) => (
@@ -137,8 +139,6 @@ export function PuzzleBoard() {
           ))}
         </div>
       </section>
-
-      <ProgressPanel result={validationResult} totalPieces={pieces.length} totalValidOrders={currentSentence.validOrders.length} hasSubmitted={hasSubmitted} />
 
       <section className="actions-card">
         <button className="primary-button" type="button" onClick={handleSubmit}>
