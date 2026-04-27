@@ -69,7 +69,6 @@ Each piece must define:
 - `reading`: kana/romaji helper
 - `meaning`: French meaning
 - `grammarType`: grammatical category
-- `correctIndex`: expected final position
 - `acceptsLeft`: allowed grammar types on the left
 - `acceptsRight`: allowed grammar types on the right
 

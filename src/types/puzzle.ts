@@ -30,7 +30,6 @@ export type PuzzlePiece = {
   reading?: string;
   meaning: string;
   grammarType: GrammarType;
-  correctIndex: number;
   acceptsLeft: GrammarType[];
   acceptsRight: GrammarType[];
 };
