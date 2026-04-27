@@ -13,6 +13,7 @@ const grammarLabels: Record<PuzzlePieceType["grammarType"], string> = {
   quoteParticle: "Quote",
   timeExpression: "Time",
   adverb: "Adverb",
+  frequencyAdverb: "Frequency",
   adjective: "Adjective",
   verb: "Verb",
   teForm: "Te form",

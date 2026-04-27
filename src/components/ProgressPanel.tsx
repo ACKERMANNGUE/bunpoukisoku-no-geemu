@@ -4,10 +4,11 @@ import type { ValidationResult } from "../types/puzzle";
 type ProgressPanelProps = {
   result: ValidationResult;
   totalPieces: number;
+  totalValidOrders: number;
   hasSubmitted: boolean;
 };
 
-export function ProgressPanel({ result, totalPieces, hasSubmitted }: ProgressPanelProps) {
+export function ProgressPanel({ result, totalPieces, totalValidOrders, hasSubmitted }: ProgressPanelProps) {
   const percentage = Math.round((result.correctPositions / totalPieces) * 100);
 
   return (
@@ -34,6 +35,11 @@ export function ProgressPanel({ result, totalPieces, hasSubmitted }: ProgressPan
           <Shuffle size={18} />
           <span>{hasSubmitted ? "Validation effectuée" : "Réarrangez les pièces"}</span>
         </div>
+        {totalValidOrders > 1 && (
+          <div className="valid-orders-hint">
+            <span>{totalValidOrders} ordres valides possibles - essayez l'autre !</span>
+          </div>
+        )}
       </div>
     </section>
   );

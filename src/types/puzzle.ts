@@ -11,12 +11,18 @@ export type GrammarType =
   | "quoteParticle"
   | "timeExpression"
   | "adverb"
+  | "frequencyAdverb"
   | "adjective"
   | "verb"
   | "teForm"
   | "auxiliary"
   | "clauseConnector"
   | "nominalizer";
+
+export type GrammarNote = {
+  rule: string;
+  explanation: string;
+};
 
 export type PuzzlePiece = {
   id: string;
@@ -36,10 +42,14 @@ export type SentencePuzzle = {
   translation: string;
   explanation: string;
   pieces: PuzzlePiece[];
+  validOrders: string[][];
+  grammarNotes: GrammarNote[];
 };
 
 export type ValidationResult = {
   isCorrect: boolean;
   correctPositions: number;
   invalidConnections: number[];
+  bestOrderIds: string[];
+  matchedOrderIndex: number;
 };

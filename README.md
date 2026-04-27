@@ -75,4 +75,4 @@ Each piece must define:
 
 ## Notes
 
-This MVP intentionally uses direct order validation. The next step would be to support multiple valid sentence orders and richer grammar rules.
+This MVP now supports multiple valid sentence orders (via `validOrders` arrays on each puzzle) and richer grammar rules (grammar notes per sentence explaining the patterns used).

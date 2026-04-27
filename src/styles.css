@@ -75,26 +75,53 @@ h1 {
 }
 
 .hero-meta {
-  min-width: 160px;
+  min-width: 220px;
   align-self: stretch;
-  display: grid;
-  place-items: center;
-  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 22px;
   border-radius: 22px;
   background: linear-gradient(150deg, #2d1b48, #8b4a74);
   color: white;
   text-align: center;
 }
 
-.hero-meta span,
-.hero-meta small {
-  opacity: 0.82;
+.hero-meta-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.72;
 }
 
-.hero-meta strong {
-  display: block;
-  font-size: 3.2rem;
+.level-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.level-table th {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 14px 6px;
+  opacity: 0.72;
+}
+
+.level-table td {
+  font-size: 2.4rem;
+  font-weight: 900;
   line-height: 1;
+  text-align: center;
+  padding: 0 14px 4px;
+}
+
+.level-table th + th,
+.level-table td + td {
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .target-card,
@@ -244,6 +271,7 @@ h1 {
 .grammar-auxiliary { --piece-color: #7209b7; }
 .grammar-clauseConnector { --piece-color: #bc6c25; }
 .grammar-nominalizer { --piece-color: #606c38; }
+.grammar-frequencyAdverb { --piece-color: #e07a5f; }
 
 .progress-panel {
   margin-top: 18px;
@@ -332,6 +360,55 @@ h1 {
   margin: 0 0 12px;
 }
 
+.answer-reveal-card {
+  border-color: rgba(139, 74, 116, 0.28);
+}
+
+.reveal-intro {
+  margin: 0 0 16px;
+  color: #5f5269;
+}
+
+.answer-orders {
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.answer-order-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+  background: rgba(139, 74, 116, 0.06);
+  border-radius: 14px;
+  border-left: 4px solid #8b4a74;
+}
+
+.order-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8b4a74;
+}
+
+.order-japanese {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+}
+
+.order-pieces {
+  font-size: 0.88rem;
+  color: #62566b;
+  letter-spacing: 0.01em;
+}
+
 .japanese-result {
   margin: 0;
   font-size: 2rem;
@@ -348,6 +425,53 @@ h1 {
   margin: 0;
   color: #3d3445;
   line-height: 1.65;
+}
+
+.alternative-order-note {
+  margin: 0 0 10px;
+  color: #8b4a74;
+  font-style: italic;
+}
+
+.grammar-notes {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(59, 42, 82, 0.12);
+}
+
+.grammar-notes h3 {
+  margin: 0 0 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b4a74;
+}
+
+.grammar-notes ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.grammar-notes li {
+  padding: 10px 14px;
+  background: rgba(139, 74, 116, 0.06);
+  border-left: 3px solid #8b4a74;
+  border-radius: 0 8px 8px 0;
+  color: #3d3445;
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.valid-orders-hint {
+  width: 100%;
+  font-style: italic;
+  color: #8b4a74;
+  font-size: 0.92rem;
 }
 
 @keyframes shake {

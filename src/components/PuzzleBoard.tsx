@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, Check, RefreshCw, Shuffle } from "lucide-react";
+import { ArrowRight, Check, Eye, RefreshCw, Shuffle } from "lucide-react";
 import { sentencePuzzles } from "../data/sentences";
 import type { PuzzlePiece as PuzzlePieceType, SentencePuzzle } from "../types/puzzle";
 import { shuffleArray } from "../utils/shuffle";
@@ -23,14 +23,16 @@ export function PuzzleBoard() {
   const [pieces, setPieces] = useState<PuzzlePieceType[]>(() => initializePieces(currentSentence));
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [completedCount, setCompletedCount] = useState(0);
+  const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
+  const [completedByLevel, setCompletedByLevel] = useState<Record<"N5" | "N4" | "N3", number>>({ N5: 0, N4: 0, N3: 0 });
 
-  const validationResult = useMemo(() => validatePieces(pieces), [pieces]);
+  const validationResult = useMemo(() => validatePieces(pieces, currentSentence.validOrders), [pieces, currentSentence]);
 
   function resetCurrentSentence(): void {
     setPieces(initializePieces(currentSentence));
     setDraggedIndex(null);
     setHasSubmitted(false);
+    setIsAnswerRevealed(false);
   }
 
   function loadNextSentence(): void {
@@ -39,13 +41,14 @@ export function PuzzleBoard() {
     setPieces(initializePieces(nextSentence));
     setDraggedIndex(null);
     setHasSubmitted(false);
+    setIsAnswerRevealed(false);
   }
 
   function handleSubmit(): void {
     setHasSubmitted(true);
 
     if (validationResult.isCorrect) {
-      setCompletedCount((previousValue) => previousValue + 1);
+      setCompletedByLevel((prev) => ({ ...prev, [currentSentence.level]: prev[currentSentence.level] + 1 }));
     }
   }
 
@@ -78,19 +81,33 @@ export function PuzzleBoard() {
           <p className="eyebrow">文法規則のゲーム</p>
           <h1>Reconstruisez la phrase japonaise</h1>
           <p className="hero-description">
-            Déplacez les morceaux pour reformer la phrase. Les formes, couleurs et connexions indiquent les rôles grammaticaux.
+            Déplacez les morceaux pour reformer la phrase. Les couleurs et connexions indiquent les rôles grammaticaux.
           </p>
         </div>
         <div className="hero-meta">
-          <span>Niveau {currentSentence.level}</span>
-          <strong>{completedCount}</strong>
-          <small>phrases terminées</small>
+          <small className="hero-meta-label">phrases terminées</small>
+          <table className="level-table">
+            <thead>
+              <tr>
+                {(["N5", "N4", "N3"] as const).map((lvl) => (
+                  <th key={lvl}>{lvl}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {(["N5", "N4", "N3"] as const).map((lvl) => (
+                  <td key={lvl}>{completedByLevel[lvl]}</td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
       <section className="target-card">
         <div>
-          <span className="card-label">Traduction cible</span>
+          <span className="card-label">Traduction cible - {currentSentence.level}</span>
           <p>{currentSentence.translation}</p>
         </div>
         <button className="secondary-button" type="button" onClick={resetCurrentSentence}>
@@ -100,7 +117,7 @@ export function PuzzleBoard() {
       </section>
 
       <section className="assembled-card">
-        <span className="card-label">Phrase assemblée</span>
+        <span className="card-label">Phrase assemblée actuellement</span>
         <p>{assembledSentence}</p>
       </section>
 
@@ -111,7 +128,7 @@ export function PuzzleBoard() {
               key={piece.id}
               piece={piece}
               index={index}
-              isCorrectPosition={hasSubmitted && piece.correctIndex === index}
+              isCorrectPosition={hasSubmitted && validationResult.bestOrderIds[index] === piece.id}
               isConnectionInvalid={hasSubmitted && validationResult.invalidConnections.includes(index)}
               onDragStart={setDraggedIndex}
               onDragOver={handleDragOver}
@@ -121,7 +138,7 @@ export function PuzzleBoard() {
         </div>
       </section>
 
-      <ProgressPanel result={validationResult} totalPieces={pieces.length} hasSubmitted={hasSubmitted} />
+      <ProgressPanel result={validationResult} totalPieces={pieces.length} totalValidOrders={currentSentence.validOrders.length} hasSubmitted={hasSubmitted} />
 
       <section className="actions-card">
         <button className="primary-button" type="button" onClick={handleSubmit}>
@@ -132,13 +149,24 @@ export function PuzzleBoard() {
           <RefreshCw size={18} />
           Recommencer
         </button>
+        {!validationResult.isCorrect && (
+          <button className="secondary-button reveal-button" type="button" onClick={() => setIsAnswerRevealed(true)}>
+            <Eye size={18} />
+            Voir la réponse
+          </button>
+        )}
         <button className="secondary-button" type="button" onClick={loadNextSentence}>
           <ArrowRight size={18} />
           Phrase suivante
         </button>
       </section>
 
-      <SentenceResult sentence={currentSentence} isVisible={hasSubmitted && validationResult.isCorrect} />
+      <SentenceResult
+        sentence={currentSentence}
+        isVisible={(hasSubmitted && validationResult.isCorrect) || isAnswerRevealed}
+        matchedOrderIndex={validationResult.matchedOrderIndex}
+        isAnswerRevealed={isAnswerRevealed && !validationResult.isCorrect}
+      />
     </main>
   );
 }
