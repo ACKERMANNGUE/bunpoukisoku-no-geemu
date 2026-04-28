@@ -459,6 +459,198 @@ h1 {
   75% { transform: translateX(3px); }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+/* ── Hero actions ──────────────────────────────────────────── */
+.hero-actions {
+  position: relative;
+  display: inline-flex;
+  margin-top: 18px;
+}
+
+.anki-toggle-button {
+  gap: 6px;
+  font-size: 0.85rem;
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+.anki-sync-badge {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34a853;
+  margin-left: 2px;
+}
+
+/* ── Anki sync panel ───────────────────────────────────────── */
+.anki-panel {
+  position: fixed;
+  z-index: 9999;
+  width: 360px;
+  border: 1px solid rgba(59, 42, 82, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 24px 56px rgba(45, 27, 72, 0.16);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+
+.anki-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b4a74;
+  border-bottom: 1px solid rgba(59, 42, 82, 0.08);
+}
+
+.anki-close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: #62566b;
+  transition: background 120ms;
+}
+
+.anki-close-button:hover {
+  background: #efe5f4;
+}
+
+.anki-panel-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.anki-field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.anki-field-row label {
+  flex: 0 0 110px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #5f5269;
+}
+
+.anki-field-row input,
+.anki-field-row select {
+  flex: 1;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(59, 42, 82, 0.2);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.88rem;
+  color: #1d1824;
+  background: #faf7fc;
+  outline: none;
+  transition: border-color 120ms;
+}
+
+.anki-field-row input:focus,
+.anki-field-row select:focus {
+  border-color: #8b4a74;
+}
+
+.anki-last-sync {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: #8b9e7a;
+}
+
+.anki-error {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.06);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.anki-success {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: #1e7e34;
+  background: rgba(52, 168, 83, 0.08);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.anki-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.anki-progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #eadff1;
+  overflow: hidden;
+}
+
+.anki-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b4a74, #2d1b48);
+  transition: width 300ms ease;
+}
+
+.anki-progress-label {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #62566b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.anki-panel-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 18px;
+  border-top: 1px solid rgba(59, 42, 82, 0.08);
+}
+
+.anki-panel-footer .primary-button {
+  flex: 1;
+  font-size: 0.88rem;
+  min-height: 40px;
+}
+
+.anki-panel-footer .secondary-button {
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.anki-panel-footer button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 @media (max-width: 780px) {
   .app-shell {
     width: min(100% - 20px, 1180px);

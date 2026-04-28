@@ -4,14 +4,16 @@ import { sentencePuzzles } from "../data/sentences";
 import type { PuzzlePiece as PuzzlePieceType, SentencePuzzle } from "../types/puzzle";
 import { shuffleArray } from "../utils/shuffle";
 import { validatePieces } from "../utils/validation";
+import { loadCachedPuzzles } from "../utils/ankiCache";
 import { PuzzlePiece } from "./PuzzlePiece";
 import { ProgressPanel } from "./ProgressPanel";
 import { SentenceResult } from "./SentenceResult";
+import { AnkiSync } from "./AnkiSync";
 
-function getRandomSentence(currentId?: string): SentencePuzzle {
-  const candidates = sentencePuzzles.filter((sentence) => sentence.id !== currentId);
-  const pool = candidates.length > 0 ? candidates : sentencePuzzles;
-  return pool[Math.floor(Math.random() * pool.length)];
+function getRandomSentence(pool: SentencePuzzle[], currentId?: string): SentencePuzzle {
+  const candidates = pool.filter((sentence) => sentence.id !== currentId);
+  const source = candidates.length > 0 ? candidates : pool;
+  return source[Math.floor(Math.random() * source.length)];
 }
 
 function initializePieces(sentence: SentencePuzzle): PuzzlePieceType[] {
@@ -19,7 +21,16 @@ function initializePieces(sentence: SentencePuzzle): PuzzlePieceType[] {
 }
 
 export function PuzzleBoard() {
-  const [currentSentence, setCurrentSentence] = useState<SentencePuzzle>(() => getRandomSentence());
+  const [ankiPuzzles, setAnkiPuzzles] = useState<SentencePuzzle[]>(() => loadCachedPuzzles());
+
+  const allPuzzles = useMemo(
+    () => [...sentencePuzzles, ...ankiPuzzles],
+    [ankiPuzzles],
+  );
+
+  const [currentSentence, setCurrentSentence] = useState<SentencePuzzle>(() =>
+    getRandomSentence(allPuzzles),
+  );
   const [pieces, setPieces] = useState<PuzzlePieceType[]>(() => initializePieces(currentSentence));
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -36,7 +47,7 @@ export function PuzzleBoard() {
   }
 
   function loadNextSentence(): void {
-    const nextSentence = getRandomSentence(currentSentence.id);
+    const nextSentence = getRandomSentence(allPuzzles, currentSentence.id);
     setCurrentSentence(nextSentence);
     setPieces(initializePieces(nextSentence));
     setDraggedIndex(null);
@@ -83,6 +94,13 @@ export function PuzzleBoard() {
           <p className="hero-description">
             Déplacez les morceaux pour reformer la phrase. Les couleurs et connexions indiquent les rôles grammaticaux.
           </p>
+          <div className="hero-actions">
+            <AnkiSync
+              onSyncComplete={(puzzles) => {
+                setAnkiPuzzles(puzzles);
+              }}
+            />
+          </div>
         </div>
         <div className="hero-meta">
           <small className="hero-meta-label">phrases terminées</small>
