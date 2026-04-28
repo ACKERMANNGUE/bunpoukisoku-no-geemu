@@ -185,27 +185,6 @@ h1 {
   transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
-.puzzle-piece::before,
-.puzzle-piece::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  transform: translateY(-50%);
-  background: inherit;
-}
-
-.puzzle-piece::before {
-  left: -18px;
-  box-shadow: inset -8px 0 0 rgba(255, 255, 255, 0.26);
-}
-
-.puzzle-piece::after {
-  right: -18px;
-  box-shadow: inset 8px 0 0 rgba(255, 255, 255, 0.26);
-}
 
 .puzzle-piece:hover {
   transform: translateY(-4px);
