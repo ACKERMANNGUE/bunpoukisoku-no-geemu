@@ -35,7 +35,7 @@ export function PuzzleBoard() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
-  const [completedByLevel, setCompletedByLevel] = useState<Record<"N5" | "N4" | "N3", number>>({ N5: 0, N4: 0, N3: 0 });
+  const [completedByLevel, setCompletedByLevel] = useState<Record<"N5" | "N4" | "N3" | "N2" | "N1", number>>({ N5: 0, N4: 0, N3: 0, N2: 0, N1: 0 });
 
   const validationResult = useMemo(() => validatePieces(pieces, currentSentence.validOrders), [pieces, currentSentence]);
 
@@ -107,14 +107,14 @@ export function PuzzleBoard() {
           <table className="level-table">
             <thead>
               <tr>
-                {(["N5", "N4", "N3"] as const).map((lvl) => (
+                {(["N5", "N4", "N3", "N2", "N1"] as const).map((lvl) => (
                   <th key={lvl}>{lvl}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               <tr>
-                {(["N5", "N4", "N3"] as const).map((lvl) => (
+                {(["N5", "N4", "N3", "N2", "N1"] as const).map((lvl) => (
                   <td key={lvl}>{completedByLevel[lvl]}</td>
                 ))}
               </tr>

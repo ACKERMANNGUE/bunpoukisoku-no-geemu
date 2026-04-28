@@ -20,6 +20,7 @@ const grammarLabels: Record<PuzzlePieceType["grammarType"], string> = {
   auxiliary: "Auxiliaire",
   clauseConnector: "Connecteur",
   nominalizer: "Nominaliseur",
+  interjection: "Interjection",
 };
 
 type PuzzlePieceProps = {

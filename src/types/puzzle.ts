@@ -17,7 +17,8 @@ export type GrammarType =
   | "teForm"
   | "auxiliary"
   | "clauseConnector"
-  | "nominalizer";
+  | "nominalizer"
+  | "interjection";
 
 export type GrammarNote = {
   rule: string;
