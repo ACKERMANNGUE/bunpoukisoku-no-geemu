@@ -16,7 +16,15 @@ export async function ankiDeckNames(): Promise<string[]> {
   return ankiRequest<string[]>("deckNames");
 }
 
-export async function ankiGetSentences(deck: string, field: string): Promise<string[]> {
+function shuffleInPlace<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+export async function ankiGetSentences(deck: string, field: string, limit?: number): Promise<string[]> {
   const cardIds = await ankiRequest<number[]>("findCards", { query: `deck:"${deck}"` });
   if (!cardIds.length) return [];
 
@@ -34,6 +42,10 @@ export async function ankiGetSentences(deck: string, field: string): Promise<str
       seen.add(text);
       sentences.push(text);
     }
+  }
+
+  if (limit !== undefined) {
+    return shuffleInPlace(sentences).slice(0, limit);
   }
   return sentences;
 }

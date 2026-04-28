@@ -65,7 +65,7 @@ export function AnkiSync({ onSyncComplete }: Props) {
     saveSyncConfig(next);
   }
 
-  async function handleSync() {
+  async function handleSync(mode: "all" | "limited") {
     if (!config.deck) {
       setStatus({ type: "error", message: "Choisissez un deck Anki." });
       return;
@@ -75,7 +75,8 @@ export function AnkiSync({ onSyncComplete }: Props) {
     setStatus({ type: "running", done: 0, total: 0, current: "Récupération des cartes…" });
 
     try {
-      const sentences = await ankiGetSentences(config.deck, config.field);
+      const limit = mode === "limited" ? config.fetchLimit : undefined;
+      const sentences = await ankiGetSentences(config.deck, config.field, limit);
       if (!sentences.length) {
         setStatus({ type: "error", message: `Aucune phrase trouvée dans « ${config.deck} » (champ : ${config.field}).` });
         return;
@@ -200,6 +201,18 @@ export function AnkiSync({ onSyncComplete }: Props) {
               />
             </div>
 
+            <div className="anki-field-row">
+              <label htmlFor="anki-limit">Nb de phrases</label>
+              <input
+                id="anki-limit"
+                type="number"
+                min={1}
+                placeholder="20"
+                value={config.fetchLimit}
+                onChange={(e) => handleConfigChange({ fetchLimit: Math.max(1, Number.parseInt(e.target.value, 10) || 1) })}
+              />
+            </div>
+
             {lastSync && (
               <p className="anki-last-sync">
                 Dernière sync : {lastSync.toLocaleString("fr-FR")}
@@ -235,11 +248,21 @@ export function AnkiSync({ onSyncComplete }: Props) {
             <button
               className="primary-button"
               type="button"
-              onClick={handleSync}
+              onClick={() => handleSync("limited")}
               disabled={isRunning}
             >
               <RefreshCw size={16} className={isRunning ? "spin" : ""} />
-              {isRunning ? "Synchronisation…" : "Synchroniser avec Anki"}
+              {isRunning ? "Synchronisation…" : `Importer ${config.fetchLimit} phrases`}
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => handleSync("all")}
+              disabled={isRunning}
+              title="Importer toutes les phrases du deck"
+            >
+              <RefreshCw size={16} />
+              Tout importer
             </button>
             <button
               className="secondary-button"

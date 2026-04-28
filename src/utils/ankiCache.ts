@@ -8,6 +8,7 @@ export type AnkiSyncConfig = {
   field: string;
   ollamaUrl: string;
   model: string;
+  fetchLimit: number;
 };
 
 const CONFIG_KEY = "bunpou_anki_config";
@@ -16,6 +17,7 @@ const CONFIG_DEFAULTS: AnkiSyncConfig = {
   field: "Sentence",
   ollamaUrl: "http://localhost:11434",
   model: "qwen2.5:7b",
+  fetchLimit: 20,
 };
 
 export function loadCachedPuzzles(): SentencePuzzle[] {
