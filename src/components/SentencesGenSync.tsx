@@ -1,12 +1,39 @@
-import { RefreshCw, Settings, Trash2, X } from "lucide-react";
+import { RefreshCw, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { sentencePuzzles } from "../data/sentences";
 import type { SentencePuzzle } from "../types/puzzle";
-import { ankiDeckNames, ankiGetSentences } from "../utils/ankiConnect";
-import { clearCachedPuzzles, lastSyncDate, loadSyncConfig, saveCachedPuzzles, saveSyncConfig } from "../utils/ankiCache";
-import { DEFAULT_OLLAMA_MODEL, DEFAULT_OLLAMA_URL, ollamaDecompose } from "../utils/ollamaDecompose";
+import { loadSyncConfig, saveSyncConfig } from "../utils/ankiCache";
+import { DEFAULT_OLLAMA_MODEL, DEFAULT_OLLAMA_URL, ollamaDecompose, ollamaGenerateSentences } from "../utils/ollamaDecompose";
 
-type SyncStatus =
+const GEN_PUZZLES_KEY = "bunpou_gen_puzzles";
+const GEN_LAST_SYNC_KEY = "bunpou_gen_last_sync";
+
+function loadGenPuzzles(): SentencePuzzle[] {
+  try {
+    const raw = localStorage.getItem(GEN_PUZZLES_KEY);
+    return raw ? (JSON.parse(raw) as SentencePuzzle[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveGenPuzzles(puzzles: SentencePuzzle[]): void {
+  localStorage.setItem(GEN_PUZZLES_KEY, JSON.stringify(puzzles));
+  localStorage.setItem(GEN_LAST_SYNC_KEY, new Date().toISOString());
+}
+
+function clearGenPuzzles(): void {
+  localStorage.removeItem(GEN_PUZZLES_KEY);
+  localStorage.removeItem(GEN_LAST_SYNC_KEY);
+}
+
+function lastGenDate(): Date | null {
+  const raw = localStorage.getItem(GEN_LAST_SYNC_KEY);
+  return raw ? new Date(raw) : null;
+}
+
+type GenStatus =
   | { type: "idle" }
   | { type: "running"; done: number; total: number; current: string }
   | { type: "done"; count: number }
@@ -16,33 +43,23 @@ type Props = {
   readonly onSyncComplete: (puzzles: SentencePuzzle[]) => void;
 };
 
-export function AnkiSync({ onSyncComplete }: Props) {
+export function SentencesGenSync({ onSyncComplete }: Props) {
   const [open, setOpen] = useState(false);
   const [config, setConfig] = useState(loadSyncConfig);
-  const [status, setStatus] = useState<SyncStatus>({ type: "idle" });
-  const [decks, setDecks] = useState<string[]>([]);
-  const [lastSync, setLastSync] = useState<Date | null>(lastSyncDate);
+  const [count, setCount] = useState(5);
+  const [status, setStatus] = useState<GenStatus>({ type: "idle" });
+  const [lastSync, setLastSync] = useState<Date | null>(lastGenDate);
   const [panelStyle, setPanelStyle] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef(false);
 
-  // Load deck list when panel opens
-  useEffect(() => {
-    if (!open || decks.length > 0) return;
-    ankiDeckNames()
-      .then(setDecks)
-      .catch(() => setDecks([]));
-  }, [open, decks.length]);
-
-  // Position panel below the toggle button
   useEffect(() => {
     if (!open || !buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
     setPanelStyle({ top: rect.bottom + 10, left: rect.left });
   }, [open]);
 
-  // Close panel on outside click
   useEffect(() => {
     if (!open) return;
     function handleOutside(e: MouseEvent) {
@@ -59,44 +76,48 @@ export function AnkiSync({ onSyncComplete }: Props) {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [open]);
 
-  function handleConfigChange(patch: Partial<typeof config>) {
+  function handleConfigChange(patch: Partial<ReturnType<typeof loadSyncConfig>>) {
     const next = { ...config, ...patch };
     setConfig(next);
     saveSyncConfig(next);
   }
 
-  async function handleSync(mode: "all" | "limited") {
-    if (!config.deck) {
-      setStatus({ type: "error", message: "Choisissez un deck Anki." });
+  async function handleGenerate() {
+    abortRef.current = false;
+    const examples = sentencePuzzles.map((p) => p.japanese);
+
+    setStatus({ type: "running", done: 0, total: 0, current: "Génération des nouvelles phrases…" });
+
+    let newSentences: string[];
+    try {
+      newSentences = await ollamaGenerateSentences(count, examples, config.ollamaUrl, config.model);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setStatus({ type: "error", message: `Erreur lors de la génération : ${message}` });
       return;
     }
 
-    abortRef.current = false;
-    setStatus({ type: "running", done: 0, total: 0, current: "Récupération des cartes…" });
+    if (newSentences.length === 0) {
+      setStatus({ type: "error", message: "Ollama n'a retourné aucune phrase." });
+      return;
+    }
+
+    const puzzles: SentencePuzzle[] = [];
 
     try {
-      const limit = mode === "limited" ? config.fetchLimit : undefined;
-      const sentences = await ankiGetSentences(config.deck, config.field, limit);
-      if (!sentences.length) {
-        setStatus({ type: "error", message: `Aucune phrase trouvée dans « ${config.deck} » (champ : ${config.field}).` });
-        return;
-      }
-
-      const puzzles: SentencePuzzle[] = [];
-
-      for (let i = 0; i < sentences.length; i++) {
+      for (let i = 0; i < newSentences.length; i++) {
         if (abortRef.current) break;
-        const sentence = sentences[i];
-        setStatus({ type: "running", done: i, total: sentences.length, current: sentence });
+        const sentence = newSentences[i];
+        setStatus({ type: "running", done: i, total: newSentences.length, current: sentence });
         try {
           const puzzle = await ollamaDecompose(sentence, config.ollamaUrl, config.model);
           puzzles.push(puzzle);
         } catch {
-          // Skip sentences that fail to parse - non-fatal
+          // Skip sentences that fail to parse — non-fatal
         }
       }
 
-      saveCachedPuzzles(puzzles);
+      saveGenPuzzles(puzzles);
       const now = new Date();
       setLastSync(now);
       setStatus({ type: "done", count: puzzles.length });
@@ -108,7 +129,7 @@ export function AnkiSync({ onSyncComplete }: Props) {
   }
 
   function handleClear() {
-    clearCachedPuzzles();
+    clearGenPuzzles();
     setLastSync(null);
     setStatus({ type: "idle" });
     onSyncComplete([]);
@@ -127,10 +148,10 @@ export function AnkiSync({ onSyncComplete }: Props) {
         className="secondary-button anki-toggle-button"
         type="button"
         onClick={() => setOpen((v) => !v)}
-        title="Synchroniser avec Anki"
+        title="Générer de nouvelles phrases japonaises via Ollama"
       >
-        <Settings size={16} />
-        Anki
+        <Sparkles size={16} />
+        Générer
         {lastSync && <span className="anki-sync-badge" />}
       </button>
 
@@ -141,52 +162,32 @@ export function AnkiSync({ onSyncComplete }: Props) {
           style={{ top: panelStyle.top, left: panelStyle.left }}
         >
           <div className="anki-panel-header">
-            <span>Synchronisation Anki</span>
+            <span>Nouvelles phrases par Ollama</span>
             <button className="anki-close-button" type="button" onClick={() => setOpen(false)}>
               <X size={16} />
             </button>
           </div>
 
           <div className="anki-panel-body">
-            <div className="anki-field-row">
-              <label htmlFor="anki-deck">Deck</label>
-              {decks.length > 0 ? (
-                <select
-                  id="anki-deck"
-                  value={config.deck}
-                  onChange={(e) => handleConfigChange({ deck: e.target.value })}
-                >
-                  <option value="">- choisir un deck -</option>
-                  {decks.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  id="anki-deck"
-                  type="text"
-                  placeholder="Nom du deck"
-                  value={config.deck}
-                  onChange={(e) => handleConfigChange({ deck: e.target.value })}
-                />
-              )}
-            </div>
+            <p className="anki-last-sync" style={{ marginTop: 0 }}>
+              Ollama génère de nouvelles phrases inspirées des {sentencePuzzles.length} exemples, puis les décompose.
+            </p>
 
             <div className="anki-field-row">
-              <label htmlFor="anki-field">Champ</label>
+              <label htmlFor="gen-count">Nb de phrases</label>
               <input
-                id="anki-field"
-                type="text"
-                placeholder="Sentence"
-                value={config.field}
-                onChange={(e) => handleConfigChange({ field: e.target.value })}
+                id="gen-count"
+                type="number"
+                min={1}
+                max={50}
+                value={count}
+                onChange={(e) => setCount(Math.max(1, Math.min(50, Number.parseInt(e.target.value, 10) || 1)))}
               />
             </div>
-
             <div className="anki-field-row">
-              <label htmlFor="anki-model">Modèle Ollama</label>
+              <label htmlFor="gen-model">Modèle Ollama</label>
               <input
-                id="anki-model"
+                id="gen-model"
                 type="text"
                 placeholder={DEFAULT_OLLAMA_MODEL}
                 value={config.model}
@@ -195,9 +196,9 @@ export function AnkiSync({ onSyncComplete }: Props) {
             </div>
 
             <div className="anki-field-row">
-              <label htmlFor="anki-url">URL Ollama</label>
+              <label htmlFor="gen-url">URL Ollama</label>
               <input
-                id="anki-url"
+                id="gen-url"
                 type="text"
                 placeholder={DEFAULT_OLLAMA_URL}
                 value={config.ollamaUrl}
@@ -205,21 +206,9 @@ export function AnkiSync({ onSyncComplete }: Props) {
               />
             </div>
 
-            <div className="anki-field-row">
-              <label htmlFor="anki-limit">Nb de phrases</label>
-              <input
-                id="anki-limit"
-                type="number"
-                min={1}
-                placeholder="20"
-                value={config.fetchLimit}
-                onChange={(e) => handleConfigChange({ fetchLimit: Math.max(1, Number.parseInt(e.target.value, 10) || 1) })}
-              />
-            </div>
-
             {lastSync && (
               <p className="anki-last-sync">
-                Dernière sync : {lastSync.toLocaleString("fr-FR")}
+                Dernière génération : {lastSync.toLocaleString("fr-FR")}
               </p>
             )}
 
@@ -232,18 +221,18 @@ export function AnkiSync({ onSyncComplete }: Props) {
                 <div className="anki-progress-bar">
                   <div
                     className="anki-progress-fill"
-                    style={{ width: status.total ? `${(status.done / status.total) * 100}%` : "4%" }}
+                    style={{ width: `${(status.done / status.total) * 100}%` }}
                   />
                 </div>
                 <p className="anki-progress-label">
-                  {status.total ? `${status.done} / ${status.total}` : "…"} - {status.current}
+                  {status.done} / {status.total} - {status.current}
                 </p>
               </div>
             )}
 
             {status.type === "done" && (
               <p className="anki-success">
-                {status.count} phrase{status.count === 1 ? "" : "s"} importée{status.count === 1 ? "" : "s"} avec succès.
+                {status.count} phrase{status.count === 1 ? "" : "s"} générée{status.count === 1 ? "" : "s"} avec succès.
               </p>
             )}
           </div>
@@ -263,25 +252,16 @@ export function AnkiSync({ onSyncComplete }: Props) {
                 <button
                   className="primary-button"
                   type="button"
-                  onClick={() => handleSync("limited")}
+                  onClick={handleGenerate}
                 >
                   <RefreshCw size={16} />
-                  {`Importer ${config.fetchLimit} phrases`}
-                </button>
-                <button
-                  className="secondary-button"
-                  type="button"
-                  onClick={() => handleSync("all")}
-                  title="Importer toutes les phrases du deck"
-                >
-                  <RefreshCw size={16} />
-                  Tout importer
+                  {`Générer ${count} phrase${count > 1 ? "s" : ""}`}
                 </button>
                 <button
                   className="secondary-button"
                   type="button"
                   onClick={handleClear}
-                  title="Supprimer les phrases importées"
+                  title="Supprimer les phrases générées"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -293,3 +273,5 @@ export function AnkiSync({ onSyncComplete }: Props) {
     </>
   );
 }
+
+export { loadGenPuzzles };

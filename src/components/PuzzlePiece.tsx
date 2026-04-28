@@ -21,6 +21,8 @@ const grammarLabels: Record<PuzzlePieceType["grammarType"], string> = {
   clauseConnector: "Connecteur",
   nominalizer: "Nominaliseur",
   interjection: "Interjection",
+  copula: "Copule",
+  sentenceFinalParticle: "Fin de phrase",
 };
 
 type PuzzlePieceProps = {

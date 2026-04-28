@@ -29,9 +29,9 @@ export function SentenceResult({ sentence, isVisible, matchedOrderIndex, isAnswe
           {sentence.validOrders.map((order, i) => (
             <li key={i} className="answer-order-item">
               {hasMultipleOrders && <span className="order-label">Ordre {i + 1}</span>}
-              <span className="order-japanese">{order.map((id) => pieceById[id].text).join("")}</span>
+              <span className="order-japanese">{order.map((id) => pieceById[id]?.text ?? "").join("")}</span>
               <span className="order-pieces">
-                {order.map((id) => pieceById[id].text).join("\u3000\u00b7\u3000")}
+                {order.map((id) => pieceById[id]?.text ?? "").join("\u3000\u00b7\u3000")}
               </span>
             </li>
           ))}

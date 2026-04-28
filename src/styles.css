@@ -138,6 +138,32 @@ h1 {
   gap: 16px;
 }
 
+.target-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.queue-counter {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #8b4a74;
+  background: rgba(139, 74, 116, 0.1);
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: default;
+}
+
+.cycle-reset-notice {
+  margin: 8px 0 0 !important;
+  font-size: 0.9rem !important;
+  color: #27ae60 !important;
+  font-weight: 700;
+}
+
 .target-card p,
 .assembled-card p {
   margin: 8px 0 0;
@@ -299,7 +325,8 @@ h1 {
 }
 
 .primary-button,
-.secondary-button {
+.secondary-button,
+.danger-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -314,9 +341,27 @@ h1 {
 }
 
 .primary-button:hover,
-.secondary-button:hover {
+.secondary-button:hover,
+.danger-button:hover {
   transform: translateY(-2px);
 }
+
+.danger-button {
+  color: white;
+  background: #c0392b;
+  box-shadow: 0 14px 28px rgba(192, 57, 43, 0.28);
+}
+
+.success-button {
+  color: white !important;
+  background: #27ae60 !important;
+  box-shadow: 0 14px 28px rgba(39, 174, 96, 0.28) !important;
+}
+
+.success-button:hover {
+  transform: translateY(-2px);
+}
+
 
 .primary-button {
   color: white;
@@ -640,7 +685,8 @@ h1 {
   min-height: 40px;
 }
 
-.anki-panel-footer .secondary-button {
+.anki-panel-footer .secondary-button,
+.anki-panel-footer .danger-button {
   min-height: 40px;
   padding: 0 14px;
 }

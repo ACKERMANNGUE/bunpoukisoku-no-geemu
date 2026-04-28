@@ -18,7 +18,9 @@ export type GrammarType =
   | "auxiliary"
   | "clauseConnector"
   | "nominalizer"
-  | "interjection";
+  | "interjection"
+  | "copula"
+  | "sentenceFinalParticle";
 
 export type GrammarNote = {
   rule: string;

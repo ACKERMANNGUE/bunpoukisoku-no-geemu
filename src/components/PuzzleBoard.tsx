@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, Check, Eye, RefreshCw, Shuffle } from "lucide-react";
+import { ArrowRight, Check, CheckCheck, Eye, RefreshCw, Shuffle } from "lucide-react";
 import { sentencePuzzles } from "../data/sentences";
 import type { PuzzlePiece as PuzzlePieceType, SentencePuzzle } from "../types/puzzle";
 import { shuffleArray } from "../utils/shuffle";
@@ -9,11 +9,22 @@ import { PuzzlePiece } from "./PuzzlePiece";
 import { ProgressPanel } from "./ProgressPanel";
 import { SentenceResult } from "./SentenceResult";
 import { AnkiSync } from "./AnkiSync";
+import { SentencesGenSync, loadGenPuzzles } from "./SentencesGenSync";
 
 function getRandomSentence(pool: SentencePuzzle[], currentId?: string): SentencePuzzle {
   const candidates = pool.filter((sentence) => sentence.id !== currentId);
   const source = candidates.length > 0 ? candidates : pool;
   return source[Math.floor(Math.random() * source.length)];
+}
+
+function buildInitialState() {
+  const all = [...sentencePuzzles, ...loadCachedPuzzles(), ...loadGenPuzzles()];
+  const shuffled = shuffleArray(all.length > 0 ? all : sentencePuzzles);
+  return {
+    current: shuffled[0],
+    pending: shuffled.slice(1).map((p) => p.id),
+    cycleTotal: shuffled.length,
+  };
 }
 
 function initializePieces(sentence: SentencePuzzle): PuzzlePieceType[] {
@@ -22,16 +33,19 @@ function initializePieces(sentence: SentencePuzzle): PuzzlePieceType[] {
 
 export function PuzzleBoard() {
   const [ankiPuzzles, setAnkiPuzzles] = useState<SentencePuzzle[]>(() => loadCachedPuzzles());
+  const [genPuzzles, setGenPuzzles] = useState<SentencePuzzle[]>(() => loadGenPuzzles());
 
   const allPuzzles = useMemo(
-    () => [...sentencePuzzles, ...ankiPuzzles],
-    [ankiPuzzles],
+    () => [...sentencePuzzles, ...ankiPuzzles, ...genPuzzles],
+    [ankiPuzzles, genPuzzles],
   );
 
-  const [currentSentence, setCurrentSentence] = useState<SentencePuzzle>(() =>
-    getRandomSentence(allPuzzles),
-  );
-  const [pieces, setPieces] = useState<PuzzlePieceType[]>(() => initializePieces(currentSentence));
+  const [initState] = useState(buildInitialState);
+  const [currentSentence, setCurrentSentence] = useState<SentencePuzzle>(initState.current);
+  const [pendingIds, setPendingIds] = useState<string[]>(initState.pending);
+  const [cycleTotal, setCycleTotal] = useState(initState.cycleTotal);
+  const [cycleJustReset, setCycleJustReset] = useState(false);
+  const [pieces, setPieces] = useState<PuzzlePieceType[]>(() => initializePieces(initState.current));
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
@@ -47,7 +61,36 @@ export function PuzzleBoard() {
   }
 
   function loadNextSentence(): void {
-    const nextSentence = getRandomSentence(allPuzzles, currentSentence.id);
+    setCycleJustReset(false);
+    let nextSentence: SentencePuzzle;
+    if (pendingIds.length === 0) {
+      nextSentence = getRandomSentence(allPuzzles, currentSentence.id);
+    } else {
+      const nextId = pendingIds[0];
+      nextSentence = allPuzzles.find((p) => p.id === nextId) ?? getRandomSentence(allPuzzles, currentSentence.id);
+      setPendingIds([...pendingIds.slice(1), currentSentence.id]);
+    }
+    setCurrentSentence(nextSentence);
+    setPieces(initializePieces(nextSentence));
+    setDraggedIndex(null);
+    setHasSubmitted(false);
+    setIsAnswerRevealed(false);
+  }
+
+  function dismissCurrentAndNext(): void {
+    let nextSentence: SentencePuzzle;
+    if (pendingIds.length === 0) {
+      const newShuffled = shuffleArray([...allPuzzles]);
+      nextSentence = newShuffled[0] ?? currentSentence;
+      setCycleTotal(newShuffled.length);
+      setPendingIds(newShuffled.slice(1).map((p) => p.id));
+      setCycleJustReset(true);
+    } else {
+      const nextId = pendingIds[0];
+      nextSentence = allPuzzles.find((p) => p.id === nextId) ?? getRandomSentence(allPuzzles, currentSentence.id);
+      setPendingIds(pendingIds.slice(1));
+      setCycleJustReset(false);
+    }
     setCurrentSentence(nextSentence);
     setPieces(initializePieces(nextSentence));
     setDraggedIndex(null);
@@ -56,6 +99,7 @@ export function PuzzleBoard() {
   }
 
   function handleSubmit(): void {
+    setCycleJustReset(false);
     setHasSubmitted(true);
 
     if (validationResult.isCorrect) {
@@ -92,12 +136,17 @@ export function PuzzleBoard() {
           <p className="eyebrow">文法規則のゲーム</p>
           <h1>Reconstruisez la phrase japonaise</h1>
           <p className="hero-description">
-            Déplacez les morceaux pour reformer la phrase. Les couleurs et connexions indiquent les rôles grammaticaux.
+            Déplacez les morceaux pour reformer la phrase. Les couleurs indiquent les rôles grammaticaux.
           </p>
           <div className="hero-actions">
             <AnkiSync
               onSyncComplete={(puzzles) => {
                 setAnkiPuzzles(puzzles);
+              }}
+            />
+            <SentencesGenSync
+              onSyncComplete={(puzzles) => {
+                setGenPuzzles(puzzles);
               }}
             />
           </div>
@@ -127,11 +176,19 @@ export function PuzzleBoard() {
         <div>
           <span className="card-label">Traduction cible - {currentSentence.level}</span>
           <p>{currentSentence.translation}</p>
+          {cycleJustReset && (
+            <p className="cycle-reset-notice">🎉 Toutes les phrases validées ! Nouveau cycle démarré.</p>
+          )}
         </div>
-        <button className="secondary-button" type="button" onClick={resetCurrentSentence}>
-          <Shuffle size={18} />
-          Mélanger
-        </button>
+        <div className="target-card-side">
+          <span className="queue-counter" title={`Phrases dans la file (dont celle-ci) : ${pendingIds.length + 1} / ${cycleTotal}`}>
+            {pendingIds.length + 1} / {cycleTotal}
+          </span>
+          <button className="secondary-button" type="button" onClick={resetCurrentSentence}>
+            <Shuffle size={18} />
+            Mélanger
+          </button>
+        </div>
       </section>
 
       <section className="assembled-card">
@@ -177,6 +234,12 @@ export function PuzzleBoard() {
           <ArrowRight size={18} />
           Phrase suivante
         </button>
+        {((hasSubmitted && validationResult.isCorrect) || isAnswerRevealed) && (
+          <button className="secondary-button success-button" type="button" onClick={dismissCurrentAndNext}>
+            <CheckCheck size={18} />
+            Retirer de la file
+          </button>
+        )}
       </section>
 
       <SentenceResult
