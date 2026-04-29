@@ -516,6 +516,7 @@ h1 {
 .hero-actions {
   position: relative;
   display: inline-flex;
+  gap: 10px;
   margin-top: 18px;
 }
 
@@ -695,6 +696,293 @@ h1 {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+/* ── Add Sentence Modal ────────────────────────────────────── */
+.asm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(29, 24, 36, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.asm-modal {
+  width: min(780px, 100%);
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(59, 42, 82, 0.14);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 32px 80px rgba(45, 27, 72, 0.22);
+  overflow: hidden;
+}
+
+.asm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(59, 42, 82, 0.1);
+  flex-shrink: 0;
+}
+
+.asm-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #2d1b48;
+}
+
+.asm-body {
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+}
+
+.asm-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 14px 24px;
+  border-top: 1px solid rgba(59, 42, 82, 0.1);
+  flex-shrink: 0;
+}
+
+.asm-footer .primary-button,
+.asm-footer .secondary-button {
+  min-height: 40px;
+  font-size: 0.9rem;
+}
+
+/* ── Section ── */
+.asm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.asm-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.asm-section-title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b4a74;
+}
+
+.asm-count {
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.asm-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #62566b;
+  line-height: 1.5;
+}
+
+.asm-code {
+  font-family: ui-monospace, monospace;
+  background: rgba(139, 74, 116, 0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: #8b4a74;
+  font-size: 0.82em;
+}
+
+.asm-field-textarea {
+  align-items: flex-start !important;
+}
+
+.asm-field-textarea label {
+  padding-top: 8px;
+}
+
+.asm-field-textarea textarea,
+.anki-field-row textarea {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid rgba(59, 42, 82, 0.2);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.88rem;
+  color: #1d1824;
+  background: #faf7fc;
+  outline: none;
+  resize: vertical;
+  transition: border-color 120ms;
+}
+
+.asm-field-textarea textarea:focus,
+.anki-field-row textarea:focus {
+  border-color: #8b4a74;
+}
+
+/* ── Small / icon buttons ── */
+.asm-small-btn {
+  font-size: 0.82rem !important;
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  gap: 5px !important;
+  flex-shrink: 0;
+}
+
+.asm-icon-btn {
+  min-height: 34px !important;
+  width: 34px !important;
+  padding: 0 !important;
+  flex-shrink: 0;
+}
+
+/* ── Piece card ── */
+.asm-pieces {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.asm-piece-card {
+  border: 1px solid rgba(59, 42, 82, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #faf7fc;
+}
+
+.asm-piece-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  flex-wrap: wrap;
+}
+
+.asm-piece-index {
+  flex-shrink: 0;
+  width: 28px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #8b4a74;
+  text-align: center;
+}
+
+.asm-piece-text {
+  width: 90px !important;
+  flex: 0 0 90px !important;
+}
+
+.asm-piece-reading {
+  width: 130px !important;
+  flex: 0 0 130px !important;
+}
+
+.asm-piece-meaning {
+  flex: 1 1 120px !important;
+  min-width: 100px !important;
+}
+
+.asm-piece-type {
+  flex: 1 1 160px !important;
+  min-width: 130px !important;
+}
+
+.asm-piece-text,
+.asm-piece-reading,
+.asm-piece-meaning,
+.asm-piece-type {
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid rgba(59, 42, 82, 0.2);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: #1d1824;
+  background: white;
+  outline: none;
+  transition: border-color 120ms;
+}
+
+.asm-piece-text:focus,
+.asm-piece-reading:focus,
+.asm-piece-meaning:focus,
+.asm-piece-type:focus {
+  border-color: #8b4a74;
+}
+
+/* ── Connections panel ── */
+.asm-piece-connections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid rgba(59, 42, 82, 0.1);
+  padding: 12px;
+  gap: 12px;
+}
+
+.asm-conn-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.asm-conn-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8b4a74;
+}
+
+.asm-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 4px 8px;
+}
+
+.asm-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #3d3445;
+  cursor: pointer;
+  user-select: none;
+}
+
+.asm-checkbox-item input[type="checkbox"] {
+  accent-color: #8b4a74;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* ── Grammar notes ── */
+.asm-note-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #faf7fc;
+  border: 1px solid rgba(59, 42, 82, 0.1);
+  border-radius: 12px;
 }
 
 @media (max-width: 780px) {

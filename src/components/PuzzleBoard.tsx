@@ -8,6 +8,7 @@ import { loadCachedPuzzles } from "../utils/ankiCache";
 import { PuzzlePiece } from "./PuzzlePiece";
 import { ProgressPanel } from "./ProgressPanel";
 import { SentenceResult } from "./SentenceResult";
+import { AddSentenceModal } from "./AddSentenceModal";
 import { AnkiSync } from "./AnkiSync";
 import { SentencesGenSync, loadGenPuzzles } from "./SentencesGenSync";
 
@@ -34,10 +35,18 @@ function initializePieces(sentence: SentencePuzzle): PuzzlePieceType[] {
 export function PuzzleBoard() {
   const [ankiPuzzles, setAnkiPuzzles] = useState<SentencePuzzle[]>(() => loadCachedPuzzles());
   const [genPuzzles, setGenPuzzles] = useState<SentencePuzzle[]>(() => loadGenPuzzles());
+  const [manualPuzzles, setManualPuzzles] = useState<SentencePuzzle[]>(() => {
+    try {
+      const raw = localStorage.getItem("bunpou_manual_puzzles");
+      return raw ? (JSON.parse(raw) as SentencePuzzle[]) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const allPuzzles = useMemo(
-    () => [...sentencePuzzles, ...ankiPuzzles, ...genPuzzles],
-    [ankiPuzzles, genPuzzles],
+    () => [...sentencePuzzles, ...ankiPuzzles, ...genPuzzles, ...manualPuzzles],
+    [ankiPuzzles, genPuzzles, manualPuzzles],
   );
 
   const [initState] = useState(buildInitialState);
@@ -139,6 +148,17 @@ export function PuzzleBoard() {
             Déplacez les morceaux pour reformer la phrase. Les couleurs indiquent les rôles grammaticaux.
           </p>
           <div className="hero-actions">
+            <AddSentenceModal
+              onSave={(puzzles) => {
+                const prev = manualPuzzles;
+                const newOnes = puzzles.filter((p) => !prev.some((e) => e.id === p.id));
+                setManualPuzzles(puzzles);
+                if (newOnes.length > 0) {
+                  setPendingIds((ids) => [...ids, ...newOnes.map((p) => p.id)]);
+                  setCycleTotal((t) => t + newOnes.length);
+                }
+              }}
+            />
             <AnkiSync
               onSyncComplete={(puzzles) => {
                 setAnkiPuzzles(puzzles);
